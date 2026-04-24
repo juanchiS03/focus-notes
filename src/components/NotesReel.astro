@@ -1,4 +1,120 @@
-<section class="bg-white text-gray-800 w-full h-full flex flex-col items-center justify-center p-8">
-    <h1 class="text-6xl font-bold mb-4">Notas:</h1>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Numquam est excepturi, molestiae corrupti autem ullam quasi incidunt. Fuga, distinctio minus fugiat quam neque est eius sunt quae vitae soluta exercitationem!</p>
+---
+// src/components/NotesReel.astro
+import NoteCard from "./NoteCard.astro";
+
+// 1. Astro hace el fetch en el servidor al cargar la página
+let notes = [];
+try {
+    const response = await fetch("http://localhost:8080/api/notes");
+    if (response.ok) {
+        notes = await response.json();
+    }
+} catch (error) {
+    console.error("Error cargando notas en el Reel:", error);
+}
+---
+
+<section class="max-w-7xl mx-auto h-full px-4 py-10">
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-slate-900">Tus Notas</h2>
+            <p class="text-slate-500 mt-1">
+                Gestiona tus ideas y recordatorios
+            </p>
+        </div>
+        <span
+            class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full border border-slate-200"
+        >
+            {notes.length} Notas
+        </span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {
+            notes.length > 0 ? (
+                notes.map((note: any) => (
+                    <NoteCard
+                        id={note.id}
+                        title={note.title}
+                        content={note.content}
+                        createdAt={note.createdAt}
+                    />
+                ))
+            ) : (
+                <div class="col-span-full py-20 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
+                    <p class="text-slate-400 text-lg italic">
+                        Aún no tienes notas...
+                    </p>
+                    <p class="text-slate-400 text-sm">
+                        ¡Pulsa el botón de arriba para crear la primera!
+                    </p>
+                </div>
+            )
+        }
+    </div>
+    <div id="modal-delete-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-100 hidden items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+            <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        </div>
+        
+        <h3 class="text-lg font-bold text-slate-900 mb-2">¿Eliminar nota?</h3>
+        <p class="text-sm text-slate-500 mb-6">Esta acción no se puede deshacer. La nota se borrará permanentemente de tu cuenta.</p>
+        
+        <div class="flex space-x-3">
+            <button id="cancel-delete" class="flex-1 px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
+                No, mantener
+            </button>
+            <button id="confirm-delete" class="flex-1 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors shadow-sm shadow-red-200">
+                Sí, eliminar
+            </button>
+        </div>
+    </div>
+</div>
 </section>
+
+<script>
+    const deleteModal = document.getElementById('modal-delete-confirm');
+    const confirmBtn = document.getElementById('confirm-delete');
+    const cancelBtn = document.getElementById('cancel-delete');
+    let noteIdToDelete: string | null = null;
+
+    // 1. Al pulsar la papelera de cualquier tarjeta
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            noteIdToDelete = button.getAttribute('data-id');
+            deleteModal?.classList.remove('hidden');
+            deleteModal?.classList.add('flex');
+        });
+    });
+
+    // 2. Si cancela, limpiamos y cerramos
+    const closeDeleteModal = () => {
+        deleteModal?.classList.add('hidden');
+        deleteModal?.classList.remove('flex');
+        noteIdToDelete = null;
+    };
+
+    cancelBtn?.addEventListener('click', closeDeleteModal);
+
+    // 3. Si confirma, lanzamos el fetch a Java
+    confirmBtn?.addEventListener('click', async () => {
+        if (!noteIdToDelete) return;
+
+        try {
+            const res = await fetch(`http://localhost:8080/api/notes/${noteIdToDelete}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                window.location.reload();
+            }
+        } catch (err) {
+            console.error("Error al borrar:", err);
+        } finally {
+            closeDeleteModal();
+        }
+    });
+</script>
