@@ -1,5 +1,145 @@
-<section class="bg-green-500 w-full h-16 flex items-center justify-between px-8">
-    <header>
-        <a href="/" class="text-white text-2xl font-bold">FocusNotes</a>
-    </header>
-</section>
+<nav class="bg-white border-b border-slate-200 fixed w-full z-20 top-0 left-0">
+    <div class="max-w-7xl flex items-center justify-between mx-auto p-4">
+        <a href="/" class="flex items-center space-x-3 shrink-0">
+            <span class="text-2xl font-bold whitespace-nowrap text-slate-900">
+                FocusNotes
+            </span>
+        </a>
+
+        <div class="hidden md:flex items-center justify-center flex-1">
+            <ul class="flex space-x-8 font-medium">
+                <li>
+                    <a
+                        href="#"
+                        class="text-slate-900 hover:text-blue-600 transition-colors"
+                        >Inicio</a>
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        class="text-slate-500 hover:text-slate-900 transition-colors"
+                        >Favoritas</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="flex flex-row items-center space-x-3 shrink-0">
+            <div class="relative hidden md:block w-64">
+                <div
+                    class="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none"
+                >
+                    <svg
+                        class="w-4 h-4 text-slate-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                        ></path>
+                    </svg>
+                </div>
+
+                <input
+                    type="text"
+                    id="search-navbar"
+                    autocomplete="off"
+                    class="block w-full ps-10 pe-4 py-2 bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-full focus:ring-2 focus:ring-slate-950 focus:border-slate-950 outline-none transition-all"
+                    placeholder="Buscar notas..."
+                />
+
+                <div
+                    id="search-results"
+                    class="absolute top-full left-0 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl hidden overflow-hidden z-50"
+                >
+                </div>
+            </div>
+
+            <button
+                id="open-modal-btn"
+                type="button"
+                class="px-5 py-2 bg-slate-950 text-white text-sm font-semibold rounded-full hover:bg-slate-800 transition-all shadow-sm active:scale-95"
+            >
+                + Nueva
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="h-20"></div>
+
+<script>
+    const input = document.getElementById("search-navbar") as HTMLInputElement;
+    const resultsBox = document.getElementById("search-results");
+    let timeout: any = null;
+
+    input?.addEventListener("input", (e) => {
+        const target = e.target as HTMLInputElement;
+        const query = target.value;
+
+        clearTimeout(timeout);
+
+        if (query.length < 1) {
+            resultsBox?.classList.add("hidden");
+            return;
+        }
+
+        timeout = setTimeout(async () => {
+            try {
+                const response = await fetch(
+                    `http://localhost:8080/api/notes?search=${query}`,
+                );
+                const notes = await response.json();
+
+                if (resultsBox) {
+                    resultsBox.classList.remove("hidden"); // Siempre mostramos la caja si hay query
+
+                    if (notes.length > 0) {
+                        // CASO: Hay notas
+                        resultsBox.innerHTML = notes
+                            .map(
+                                (n: any) => `
+                            <div class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors">
+                                <p class="font-bold text-sm text-slate-800">${n.title}</p>
+                                <p class="text-xs text-slate-500 truncate">${n.content}</p>
+                            </div>
+                        `,
+                            )
+                            .join("");
+                    } else {
+                        // CASO: No hay resultados
+                        resultsBox.innerHTML = `
+                            <div class="p-4 text-center">
+                                <p class="text-sm text-slate-500 font-medium italic">Sin resultados para "${query}"</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (err) {
+                console.error("Error buscando:", err);
+            }
+        }, 300);
+    });
+
+    // Cerrar el desplegable si hacemos clic fuera
+    document.addEventListener("click", (e) => {
+        if (
+            !input?.contains(e.target as Node) &&
+            !resultsBox?.contains(e.target as Node)
+        ) {
+            resultsBox?.classList.add("hidden");
+        }
+    });
+
+    const openBtn = document.getElementById('open-modal-btn');
+    
+    openBtn?.addEventListener('click', () => {
+        console.log("Botón pulsado, enviando evento..."); // Si no ves esto en F12, el ID está mal
+        const event = new CustomEvent('open-note-modal');
+        document.dispatchEvent(event);
+    });
+</script>
