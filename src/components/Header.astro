@@ -10,15 +10,19 @@
             <ul class="flex space-x-8 font-medium">
                 <li>
                     <a
+                        id="title-notes-header"
                         href="#"
                         class="text-slate-900 hover:text-blue-600 transition-colors"
-                        >Inicio</a>
+                        >Inicio</a
+                    >
                 </li>
                 <li>
                     <a
+                        id="fav-button"
                         href="#"
                         class="text-slate-500 hover:text-slate-900 transition-colors"
-                        >Favoritas</a>
+                        >Favoritas</a
+                    >
                 </li>
             </ul>
         </div>
@@ -135,11 +139,24 @@
         }
     });
 
-    const openBtn = document.getElementById('open-modal-btn');
-    
-    openBtn?.addEventListener('click', () => {
+    const openBtn = document.getElementById("open-modal-btn");
+
+    openBtn?.addEventListener("click", () => {
         console.log("Botón pulsado, enviando evento..."); // Si no ves esto en F12, el ID está mal
-        const event = new CustomEvent('open-note-modal');
+        const event = new CustomEvent("open-note-modal");
+        document.dispatchEvent(event);
+    });
+
+    // Favoritas
+    const favBtn = document.getElementById("fav-button");
+    favBtn?.addEventListener('click', async() =>{
+        const event = new CustomEvent("filter-favourites");
+        document.dispatchEvent(event);
+    });
+
+    const allBtn = document.getElementById("title-notes-header");
+    allBtn?.addEventListener('click', async() =>{
+        const event = new CustomEvent("all-notes");
         document.dispatchEvent(event);
     });
 </script>
