@@ -29,6 +29,7 @@
             </div>
 
             <form id="form-new-note" class="space-y-4">
+                <input type="hidden" id="edit-note-id" value="" />
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1"
                         >Título</label
@@ -94,8 +95,33 @@
     const form = document.getElementById("form-new-note");
     const cancelBtn = document.getElementById("btn-cancel");
 
+    // Escuchamos un evento personalizado para editar una nota desde cualquier sitio
+    document.addEventListener("open-edit-modal", (e: any) => {
+        const noteData = e.detail; // Esperamos que envíen los datos de la nota a editar
+
+        (document.getElementById("edit-note-id") as HTMLInputElement).value =
+            noteData.id || "";
+        // Aquí podrías rellenar el formulario con los datos de la nota para editar
+        (document.getElementById("note-title") as HTMLInputElement).value =
+            noteData.title || "";
+        (document.getElementById("note-content") as HTMLTextAreaElement).value =
+            noteData.content || "";
+        (document.getElementById("note-tag") as HTMLSelectElement).value =
+            noteData.tag || "";
+
+        modal?.classList.remove("hidden");
+        modal?.classList.add("flex"); // Añadimos flex aquí para que se centre
+    });
+
     // Escuchamos un evento personalizado para abrir el modal desde cualquier sitio
     document.addEventListener("open-note-modal", () => {
+        // IMPORTANTE: Limpiamos el ID oculto para que no se quede "pegado"
+        const editIdInput = document.getElementById(
+            "edit-note-id",
+        ) as HTMLInputElement;
+        if (editIdInput) editIdInput.value = "";
+
+        modal?.classList.replace("hidden", "flex");
         console.log("Modal escuchando: Abriendo...");
         modal?.classList.remove("hidden");
         modal?.classList.add("flex"); // Añadimos flex aquí para que se centre
@@ -111,24 +137,44 @@
 
     form?.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        // 1. Leemos el ID del "escondite" (el input oculto)
+        const editIdInput = document.getElementById(
+            "edit-note-id",
+        ) as HTMLInputElement;
+        const noteId = editIdInput.value;
+
         const title = (
             document.getElementById("note-title") as HTMLInputElement
         ).value;
         const content = (
             document.getElementById("note-content") as HTMLTextAreaElement
         ).value;
-        const tag = (
-            document.getElementById("note-tag") as HTMLSelectElement
-        ).value;
+        const tag = (document.getElementById("note-tag") as HTMLSelectElement)
+            .value;
 
-        const res = await fetch("http://localhost:8080/api/notes", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title, content, tag }),
-        });
+        const isEdit = noteId !== "";
 
-        if (res.ok) {
-            window.location.reload(); // Refrescar para ver la nueva nota
+        // Si hay ID, la URL termina en /ID. Si no, va a la raíz.
+        const url = isEdit
+            ? `http://localhost:8080/api/notes/${noteId}`
+            : "http://localhost:8080/api/notes";
+
+        // Si hay ID usamos PUT. Si no, usamos POST.
+        const method = isEdit ? "PUT" : "POST";
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, content, tag }),
+            });
+
+            if (res.ok) {
+                window.location.reload(); // Refrescar para ver la nueva nota
+            }
+        } catch (err) {
+            console.error("Error guardando nota:", err);
         }
     });
 

@@ -302,4 +302,17 @@ try {
             }
         });
     });
+
+
+    // Edición de notas
+    document.querySelectorAll(".edit-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+            console.log("Botón de editar pulsado");
+            const id = button.getAttribute("data-id");
+            // Aquí podrías lanzar un evento para abrir un modal de edición,
+            // pasando el ID de la nota a editar. Por ejemplo:
+            const event = new CustomEvent("open-edit-modal", { detail: { id, title: button.getAttribute("data-title"), content: button.getAttribute("data-content"), tag: button.getAttribute("data-tag") } });
+            document.dispatchEvent(event);
+        });
+    });
 </script>
