@@ -83,7 +83,7 @@
 
     input?.addEventListener("input", (e) => {
         const target = e.target as HTMLInputElement;
-        const query = target.value;
+        const query = target.value.trim();
 
         clearTimeout(timeout);
 
@@ -94,31 +94,44 @@
 
         timeout = setTimeout(async () => {
             try {
-                const response = await fetch(
-                    `http://localhost:8080/api/notes?search=${query}`,
-                );
-                const notes = await response.json();
+                let url = "";
 
+                // --- LÓGICA DE HASHTAG ---
+                if (query.startsWith("#")) {
+                    const tagContent = query.substring(1).trim(); // Quitamos el #
+                    // Opción A: Si tienes un endpoint en Java que busque por tag:
+                    url = `http://localhost:8080/api/notes/tag?tag=${tagContent}`;
+                    // Nota: Si no tienes el endpoint de búsqueda por tag aún,
+                    // puedes simplemente filtrar el resultado de "all" en el JS.
+                } else {
+                    // Búsqueda normal por título/contenido
+                    url = `http://localhost:8080/api/notes?search=${query}`;
+                }
+
+                const response = await fetch(url);
+                const notes = await response.json();
+                
                 if (resultsBox) {
                     resultsBox.classList.remove("hidden"); // Siempre mostramos la caja si hay query
 
                     if (notes.length > 0) {
-                        // CASO: Hay notas
                         resultsBox.innerHTML = notes
-                            .map(
-                                (n: any) => `
+                            .map((n: any) => `
                             <div class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors">
-                                <p class="font-bold text-sm text-slate-800">${n.title}</p>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <p class="font-bold text-sm text-slate-800">${n.title}</p>
+                                    ${n.tag ? `<span class="bg-slate-100 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">${n.tag}</span>` : ''}
+                                </div>
                                 <p class="text-xs text-slate-500 truncate">${n.content}</p>
                             </div>
-                        `,
-                            )
-                            .join("");
+                        `).join("");
                     } else {
                         // CASO: No hay resultados
                         resultsBox.innerHTML = `
                             <div class="p-4 text-center">
-                                <p class="text-sm text-slate-500 font-medium italic">Sin resultados para "${query}"</p>
+                                <p class="text-sm text-slate-500 font-medium italic">
+                                    ${query.startsWith('#') ? 'No hay notas con esa etiqueta' : `Sin resultados para "${query}"`}
+                                </p>
                             </div>
                         `;
                     }
@@ -149,13 +162,13 @@
 
     // Favoritas
     const favBtn = document.getElementById("fav-button");
-    favBtn?.addEventListener('click', async() =>{
+    favBtn?.addEventListener("click", async () => {
         const event = new CustomEvent("filter-favourites");
         document.dispatchEvent(event);
     });
 
     const allBtn = document.getElementById("title-notes-header");
-    allBtn?.addEventListener('click', async() =>{
+    allBtn?.addEventListener("click", async () => {
         const event = new CustomEvent("all-notes");
         document.dispatchEvent(event);
     });
