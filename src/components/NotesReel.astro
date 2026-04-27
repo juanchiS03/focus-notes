@@ -6,7 +6,7 @@ import NoteCard from "./NoteCard.astro";
 let notes = [];
 let favs = [];
 try {
-    const response = await fetch("http://localhost:8080/api/notes");
+    const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/notes`);
     if (response.ok) {
         notes = await response.json();
     }
@@ -15,7 +15,7 @@ try {
 }
 
 try {
-    const response = await fetch("http://localhost:8080/api/notes/favourites");
+    const response = await fetch(`${import.meta.env.PUBLIC_API_URL}/notes/favourites`);
     if (response.ok) {
         favs = await response.json();
     }
@@ -24,7 +24,7 @@ try {
 }
 ---
 
-<section class="max-w-7xl mx-auto h-full px-4 py-10">
+<section class="max-w-7xl mx-auto px-4 py-10 mt-20">
     <div class="flex justify-between items-end mb-8">
         <div>
             <h2 id="title-notes" class="text-3xl font-bold text-slate-900">
@@ -195,7 +195,7 @@ try {
 
         try {
             const res = await fetch(
-                `http://localhost:8080/api/notes/${noteIdToDelete}`,
+                `${import.meta.env.PUBLIC_API_URL}/notes/${noteIdToDelete}`,
                 {
                     method: "DELETE",
                 },
@@ -217,7 +217,7 @@ try {
             try {
                 // Llamamos al endpoint PATCH que creaste en Java
                 const res = await fetch(
-                    `http://localhost:8080/api/notes/${id}/favourite`,
+                    `${import.meta.env.PUBLIC_API_URL}/notes/${id}/favourite`,
                     {
                         method: "PATCH",
                     },

@@ -100,17 +100,17 @@
                 if (query.startsWith("#")) {
                     const tagContent = query.substring(1).trim(); // Quitamos el #
                     // Opción A: Si tienes un endpoint en Java que busque por tag:
-                    url = `http://localhost:8080/api/notes/tag?tag=${tagContent}`;
+                    url = `${import.meta.env.PUBLIC_API_URL}/notes/tag?tag=${tagContent}`;
                     // Nota: Si no tienes el endpoint de búsqueda por tag aún,
                     // puedes simplemente filtrar el resultado de "all" en el JS.
                 } else {
                     // Búsqueda normal por título/contenido
-                    url = `http://localhost:8080/api/notes?search=${query}`;
+                    url = `${import.meta.env.PUBLIC_API_URL}/notes?search=${query}`;
                 }
 
                 const response = await fetch(url);
                 const notes = await response.json();
-                
+
                 if (resultsBox) {
                     resultsBox.classList.remove("hidden"); // Siempre mostramos la caja si hay query
 

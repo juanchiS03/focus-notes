@@ -157,8 +157,8 @@
 
         // Si hay ID, la URL termina en /ID. Si no, va a la raíz.
         const url = isEdit
-            ? `http://localhost:8080/api/notes/${noteId}`
-            : "http://localhost:8080/api/notes";
+            ? `${import.meta.env.PUBLIC_API_URL}/notes/${noteId}`
+            : `${import.meta.env.PUBLIC_API_URL}/notes`;
 
         // Si hay ID usamos PUT. Si no, usamos POST.
         const method = isEdit ? "PUT" : "POST";
