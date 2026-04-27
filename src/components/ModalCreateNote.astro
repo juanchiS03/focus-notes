@@ -53,6 +53,22 @@
                         placeholder="Escribe tu idea aquí..."></textarea>
                 </div>
 
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1"
+                        >Tag</label
+                    >
+                    <select
+                        id="note-tag"
+                        class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand outline-none text-slate-600"
+                    >
+                        <option value="">Sin etiqueta</option>
+                        <option value="Trabajo">Trabajo</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Idea">Idea</option>
+                        <option value="Urgente">Urgente</option>
+                    </select>
+                </div>
+
                 <div class="flex space-x-3 pt-2">
                     <button
                         type="button"
@@ -101,11 +117,14 @@
         const content = (
             document.getElementById("note-content") as HTMLTextAreaElement
         ).value;
+        const tag = (
+            document.getElementById("note-tag") as HTMLSelectElement
+        ).value;
 
         const res = await fetch("http://localhost:8080/api/notes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title, content }),
+            body: JSON.stringify({ title, content, tag }),
         });
 
         if (res.ok) {

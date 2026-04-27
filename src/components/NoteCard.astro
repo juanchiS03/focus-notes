@@ -1,6 +1,17 @@
 ---
 // src/components/NoteCard.astro
-const { id, title, content, createdAt, favourite } = Astro.props;
+const { id, title, content, createdAt, favourite, tag } = Astro.props;
+
+const tagStyles: any = {
+    Trabajo: "bg-blue-50 border-blue-200 text-blue-700",
+    Personal: "bg-green-50 border-green-200 text-green-700",
+    Idea: "bg-purple-50 border-purple-200 text-purple-700",
+    Urgente: "bg-red-50 border-red-200 text-red-700",
+};
+
+// Si el tag no existe en el diccionario, usamos uno por defecto (gris)
+const currentStyle =
+    tagStyles[tag] || "bg-slate-50 border-slate-200 text-slate-600";
 ---
 
 <div
@@ -57,6 +68,16 @@ const { id, title, content, createdAt, favourite } = Astro.props;
     <p class="text-slate-600 text-sm line-clamp-4 flex-1">
         {content}
     </p>
+
+    {
+        tag && (
+            <span
+                class={`inline-flex items-center border text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide mt-4 w-fit ${currentStyle}`}
+            >
+                {tag}
+            </span>
+        )
+    }
 
     <div
         class="mt-4 pt-3 border-t border-slate-50 text-[10px] font-medium uppercase tracking-wider text-slate-400"
