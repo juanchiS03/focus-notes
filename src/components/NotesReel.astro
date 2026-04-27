@@ -42,6 +42,29 @@ try {
         </span>
     </div>
 
+    <div class="flex flex-row w-full mb-6 p-1 gap-1 justify-start items-center">
+        <button
+            type="button"
+            class="tag-filter-btn text-white bg-blue-700 border-2 border-blue-300 rounded-full px-4 py-1 text-sm font-semibold hover:bg-blue-800 transition-colors"
+            data-tag="Trabajo">Trabajo</button
+        >
+        <button
+            type="button"
+            class="tag-filter-btn text-white bg-green-700 border-2 border-green-300 rounded-full px-4 py-1 text-sm font-semibold hover:bg-green-800 transition-colors"
+            data-tag="Personal">Personal</button
+        >
+        <button
+            type="button"
+            class="tag-filter-btn text-white bg-purple-700 border-2 border-purple-300 rounded-full px-4 py-1 text-sm font-semibold hover:bg-purple-800 transition-colors"
+            data-tag="Idea">Idea</button
+        >
+        <button
+            type="button"
+            class="tag-filter-btn text-white bg-red-700 border-2 border-red-300 rounded-full px-4 py-1 text-sm font-semibold hover:bg-red-800 transition-colors"
+            data-tag="Urgente">Urgente</button
+        >
+    </div>
+
     <div
         id="all-notes"
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -79,6 +102,17 @@ try {
                 </div>
             )
         }
+    </div>
+    <div
+        id="empty-filter-message"
+        class="col-span-full py-20 hidden flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50"
+    >
+        <p class="text-slate-400 text-lg italic">
+            No hay notas con esta etiqueta...
+        </p>
+        <p class="text-slate-400 text-sm">
+            Prueba con otro filtro o crea una nueva nota.
+        </p>
     </div>
     <div
         id="modal-delete-confirm"
@@ -214,5 +248,58 @@ try {
         gridAll?.classList.remove("hidden");
         gridFavs?.classList.add("hidden");
         if (title) title.innerText = "Tus Notas";
+    });
+
+    // Filtro por tags
+    document.querySelectorAll(".tag-filter-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+            const tag = button.getAttribute("data-tag");
+            const emptyMessage = document.getElementById(
+                "empty-filter-message",
+            );
+            const title = document.getElementById("title-notes");
+            if (!tag) return;
+
+            // 1. Resetear visibilidad del mensaje vacío y estado de botones
+            emptyMessage?.classList.add("hidden");
+            emptyMessage?.classList.remove("flex");
+
+            // Si ya estamos filtrando por este tag, volvemos a mostrar todo (Reset)
+            if (button.classList.contains("active")) {
+                button.classList.remove("active");
+                document
+                    .querySelectorAll(".note-card")
+                    .forEach((card) => card.classList.remove("hidden"));
+                if (title) title.innerText = "Tus Notas";
+                return;
+            }
+
+            // 2. Activar botón actual y desactivar el resto
+            document
+                .querySelectorAll(".tag-filter-btn")
+                .forEach((btn) => btn.classList.remove("active"));
+            button.classList.add("active");
+            if (title) title.innerText = `Notas: ${tag}`;
+
+            // 3. Filtrar las notas
+            document.querySelectorAll(".note-card").forEach((card) => {
+                const cardTag = card.getAttribute("data-tag");
+                if (cardTag === tag) {
+                    card.classList.remove("hidden");
+                } else {
+                    card.classList.add("hidden");
+                }
+            });
+
+            // 4. Comprobar si han quedado notas visibles
+            const visibleCards = document.querySelectorAll(
+                ".note-card:not(.hidden)",
+            ).length;
+
+            if (visibleCards === 0) {
+                emptyMessage?.classList.remove("hidden");
+                emptyMessage?.classList.add("flex");
+            }
+        });
     });
 </script>
